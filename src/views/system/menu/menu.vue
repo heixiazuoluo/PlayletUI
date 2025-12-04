@@ -192,6 +192,7 @@
   });
 
   function selectAddMenu(key: string) {
+    console.log(key);
     drawerTitle.value = key === 'home' ? '添加顶栏菜单' : `添加子菜单：${treeItemTitle.value}`;
     openCreateDrawer();
   }
@@ -203,10 +204,13 @@
 
   function selectedTree(keys) {
     if (keys.length) {
+      // console.log('treeData', treeData.value);
       const treeItem = getTreeItem(unref(treeData), keys[0]);
+      // console.log('treeItem', treeItem);
       treeItemKey.value = keys;
       treeItemTitle.value = treeItem.label;
       Object.assign(formParams, treeItem);
+      // console.log('formParams', formParams);
       isEditMenu.value = true;
     } else {
       isEditMenu.value = false;
@@ -258,6 +262,7 @@
     const keys = treeMenuList.list.map((item) => item.key);
     Object.assign(formParams, keys);
     treeData.value = treeMenuList.list;
+    console.log('treeData.value', treeData.value);
     loading.value = false;
   });
 

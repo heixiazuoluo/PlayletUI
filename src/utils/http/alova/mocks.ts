@@ -4,7 +4,16 @@ import UserMock from '../../../../mock/user';
 import MenusMock from '../../../../mock/user/menus';
 import ConsoleMock from '../../../../mock/dashboard/console';
 import TableMock from '../../../../mock/table/list';
+import UserTableMock from '../../../../mock/table/userList';
 import SystemMenuMock from '../../../../mock/system/menu';
 import SystemRoleMock from '../../../../mock/system/role';
 
-export default [UserMock, MenusMock, TableMock, ConsoleMock, SystemMenuMock, SystemRoleMock];
+export default [
+  UserMock,
+  MenusMock,
+  TableMock,
+  ConsoleMock,
+  SystemMenuMock,
+  SystemRoleMock,
+  UserTableMock,
+];

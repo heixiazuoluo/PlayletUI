@@ -95,6 +95,9 @@
   function openDrawer() {
     state.isDrawer = true;
   }
+  defineExpose({
+    openDrawer,
+  });
 
   function closeDrawer() {
     state.isDrawer = false;

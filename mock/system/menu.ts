@@ -71,6 +71,55 @@ const menuList = () => {
         },
       ],
     },
+    {
+      label: '权限管理',
+      key: 'system',
+      type: 1,
+      subtitle: 'system',
+      openType: 1,
+      auth: 'system',
+      path: '/system',
+      children: [
+        {
+          label: '用户管理',
+          key: 'user',
+          type: 1,
+          subtitle: 'user',
+          openType: 1,
+          auth: 'system_user',
+          path: '/system/user',
+          children: [
+            {
+              label: '重置密码',
+              key: 'system_user_reset',
+              type: 2,
+              subtitle: 'system_user_reset',
+              openType: 1,
+              auth: 'system_user_reset',
+              path: '/system/user',
+            },
+          ],
+        },
+        {
+          label: '菜单权限',
+          key: 'menu',
+          type: 1,
+          subtitle: 'menu',
+          openType: 1,
+          auth: 'system_menu',
+          path: '/system/menu',
+        },
+        {
+          label: '角色权限',
+          key: 'role',
+          type: 1,
+          subtitle: 'role',
+          openType: 1,
+          auth: 'system_role',
+          path: '/system/role',
+        },
+      ],
+    },
   ];
 
   return result;

@@ -15,7 +15,7 @@
         ref="actionRef"
         :actionColumn="actionColumn"
         @update:checked-row-keys="onCheckedRow"
-        :scroll-x="1090"
+        canResize
         :striped="true"
       >
         <template #tableTitle>
@@ -108,7 +108,7 @@
           console.log(e);
         },
       },
-      rules: [{ required: true, message: '请输入姓名', trigger: ['blur'] }],
+      rules: [{ required: false, message: '请输入姓名', trigger: ['blur'] }],
     },
     {
       field: 'mobile',
