@@ -25,6 +25,15 @@ const routes: Array<RouteRecordRaw> = [
         },
         component: () => import('@/views/inquiry/appList/appList.vue'),
       },
+      {
+        path: 'userManage',
+        name: 'inquiry_user_manage',
+        meta: {
+          title: '用户管理',
+          // permissions: ['inquiry_user_manage'],
+        },
+        component: () => import('@/views/inquiry/userManage/index.vue'),
+      },
     ],
   },
 ];

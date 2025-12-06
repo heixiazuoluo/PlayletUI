@@ -7,6 +7,7 @@ import TableMock from '../../../../mock/table/list';
 import UserTableMock from '../../../../mock/table/userList';
 import SystemMenuMock from '../../../../mock/system/menu';
 import SystemRoleMock from '../../../../mock/system/role';
+import UserManageMock from '../../../../mock/inquiry/userManage';
 
 export default [
   UserMock,
@@ -16,4 +17,5 @@ export default [
   SystemMenuMock,
   SystemRoleMock,
   UserTableMock,
+  UserManageMock,
 ];
