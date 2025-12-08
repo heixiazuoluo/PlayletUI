@@ -54,6 +54,22 @@ const routes: Array<RouteRecordRaw> = [
         },
         component: () => import('@/views/inquiry/userManage/index.vue'),
       },
+      {
+        path: 'productRecommend',
+        name: 'data_product_recommend',
+        meta: {
+          title: '其他产品推荐',
+        },
+        component: () => import('@/views/inquiry/productRecommend/index.vue'),
+      },
+      {
+        path: 'adManage',
+        name: 'inquiry_ad_manage',
+        meta: {
+          title: '广告管理',
+        },
+        component: () => import('@/views/inquiry/adManage/index.vue'),
+      },
     ],
   },
 ];
