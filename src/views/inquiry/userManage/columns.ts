@@ -19,7 +19,23 @@ export interface UserData {
   loginTime: string;
   loginIp: string;
   banCount: number;
+  markStatus: number;
 }
+
+export interface FKRecord {
+  id: number;
+  data1: string;
+  data2: string;
+}
+
+const markStatusMap = {
+  1: { text: '状态1', type: 'success' },
+  2: { text: '状态2', type: 'error' },
+  3: { text: '状态3', type: 'warning' },
+  4: { text: '状态4', type: 'info' },
+  5: { text: '状态5', type: 'default' },
+  6: { text: '状态6', type: 'default' },
+};
 
 const statusMap = {
   1: { text: '启用', type: 'success' },
@@ -27,17 +43,40 @@ const statusMap = {
 };
 
 const levelMap = {
-  1: { text: '普通用户', type: 'default' },
-  2: { text: '会员', type: 'info' },
-  3: { text: 'VIP', type: 'warning' },
-  4: { text: 'SVIP', type: 'success' },
+  1: { text: 'V1(初级团长)', type: 'default' },
+  2: { text: 'V2(中级团长)', type: 'info' },
+  3: { text: 'V3(高级团长)', type: 'warning' },
 };
+export const fkColumns: BasicColumn<FKRecord>[] = [
+  {
+    title: 'ID',
+    key: 'id',
+    width: 80,
+  },
+  {
+    title: '数据',
+    key: 'data1',
+    width: 120,
+  },
+  {
+    title: '执行类型',
+    key: 'data2',
+    width: 120,
+  },
+];
 
 export const columns: BasicColumn<UserData>[] = [
+  {
+    type: 'selection',
+    key: 'selection',
+    width: 80,
+    fixed: 'left',
+  },
   {
     title: '用户ID',
     key: 'userId',
     width: 80,
+    fixed: 'left',
   },
   {
     title: '用户昵称',
@@ -59,10 +98,10 @@ export const columns: BasicColumn<UserData>[] = [
   {
     title: '用户等级',
     key: 'userLevel',
-    width: 100,
+    width: 130,
     render(record) {
       const level = levelMap[record.userLevel] || levelMap[1];
-      return h(NTag, { type: level.type as any, size: 'small' }, { default: () => level.text });
+      return level.text || '-';
     },
   },
   {
@@ -122,6 +161,15 @@ export const columns: BasicColumn<UserData>[] = [
     render(record) {
       const status = statusMap[record.status] || statusMap[0];
       return h(NTag, { type: status.type as any, size: 'small' }, { default: () => status.text });
+    },
+  },
+  {
+    title: '标记状态',
+    key: 'markStatus',
+    width: 100,
+    render(record) {
+      const status = markStatusMap[record.markStatus] || markStatusMap[0];
+      return status.text || '-';
     },
   },
   {

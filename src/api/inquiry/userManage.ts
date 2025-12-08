@@ -26,3 +26,9 @@ export function updateLeaderInfo(params: { userId: number; leaderId: number }) {
     ...params,
   });
 }
+
+export function getFkRecord(params: any) {
+  return Alova.Get('/table/record', {
+    params,
+  });
+}

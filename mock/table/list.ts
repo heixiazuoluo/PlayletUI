@@ -43,6 +43,17 @@ function appList(pageSize: number) {
   });
   return result;
 }
+function fkList(pageSize: number) {
+  const result: any[] = [];
+  doCustomTimes(pageSize, () => {
+    result.push({
+      id: faker.string.numeric(4),
+      data1: faker.person.firstName(),
+      data2: faker.helpers.arrayElement([1, 0, 2, 4, 6, 5]),
+    });
+  });
+  return result;
+}
 
 export default defineMock({
   // 表格数据列表
@@ -62,6 +73,19 @@ export default defineMock({
   '/api/app/list': ({ query }) => {
     const { page = 1, pageSize = 10, name } = query;
     const list = appList(Number(pageSize));
+    // 并非真实，只是为了模拟搜索结果
+    const count = name ? 30 : 60;
+    return resultSuccess({
+      page: Number(page),
+      pageSize: Number(pageSize),
+      pageCount: count,
+      itemCount: count * Number(pageSize),
+      list,
+    });
+  },
+  '/api/table/record': ({ query }) => {
+    const { page = 1, pageSize = 10, name } = query;
+    const list = fkList(Number(pageSize));
     // 并非真实，只是为了模拟搜索结果
     const count = name ? 30 : 60;
     return resultSuccess({
