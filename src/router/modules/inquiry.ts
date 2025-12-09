@@ -80,6 +80,22 @@ const routes: Array<RouteRecordRaw> = [
         },
         component: () => import('@/views/inquiry/adManage/adCode/index.vue'),
       },
+      {
+        path: 'coinRecord',
+        name: 'inquiry_coin_record',
+        meta: {
+          title: '金币增加记录',
+        },
+        component: () => import('@/views/inquiry/coinRecord/index.vue'),
+      },
+      {
+        path: 'adRevenue',
+        name: 'inquiry_ad_revenue',
+        meta: {
+          title: '广告收益列表',
+        },
+        component: () => import('@/views/inquiry/adRevenue/index.vue'),
+      },
     ],
   },
 ];
