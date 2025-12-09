@@ -70,6 +70,16 @@ const routes: Array<RouteRecordRaw> = [
         },
         component: () => import('@/views/inquiry/adManage/index.vue'),
       },
+      {
+        path: 'ad-code/:id?',
+        name: 'ad-code',
+        meta: {
+          title: '代码位管理',
+          hidden: true,
+          // activeMenu: 'app-invite',
+        },
+        component: () => import('@/views/inquiry/adManage/adCode/index.vue'),
+      },
     ],
   },
 ];

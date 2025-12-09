@@ -11,6 +11,7 @@ import UserManageMock from '../../../../mock/inquiry/userManage';
 import ProfitMock from '../../../../mock/inquiry/profit';
 import ProductRecommendMock from '../../../../mock/dataManage/productRecommend';
 import AdManageMock from '../../../../mock/inquiry/adManage';
+import AdCodeManageMock from '../../../../mock/inquiry/adCodeManage';
 
 export default [
   UserMock,
@@ -24,4 +25,5 @@ export default [
   ProfitMock,
   ProductRecommendMock,
   AdManageMock,
+  AdCodeManageMock,
 ];

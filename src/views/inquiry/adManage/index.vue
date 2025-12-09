@@ -48,6 +48,8 @@
   import { columns, AdData } from './columns';
   import { getAdList } from '@/api/inquiry/adManage';
   import { PlusOutlined } from '@vicons/antd';
+  import { useRouter } from 'vue-router';
+  const router = useRouter();
 
   const actionRef = ref();
   const isEdit = ref(false);
@@ -217,11 +219,17 @@
             label: '广告位管理',
             onClick: handleAdSlot.bind(null, record),
           },
+          {
+            label: '代码位管理',
+            onClick: to.bind(null, record),
+          },
         ],
       });
     },
   });
-
+  function to(record: AdData) {
+    router.push({ name: 'ad-code', params: { id: record.id } });
+  }
   const [register, { getFieldsValue }] = useForm({
     gridProps: { cols: '1 s:1 m:2 l:3 xl:4 2xl:4' },
     labelWidth: 80,
