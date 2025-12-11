@@ -137,15 +137,29 @@
   </n-flex>
 </template>
 <script lang="ts" setup>
-  import { computed, h, nextTick, reactive, ref } from 'vue';
+  import { computed, h, nextTick, onActivated, reactive, ref } from 'vue';
   import { PlusOutlined, DeleteFilled } from '@vicons/antd';
 
   import { BasicTable, TableAction } from '@/components/Table';
   import { BasicForm, FormSchema, useForm } from '@/components/Form/index';
   import { columns, ListData } from './colums';
-  import { getAdminslist, batchDeleteAdmins, batchResetpwdAdmins, createAdmins, updateAdmins } from '@/api/permission/user';
+  import {
+    getAdminslist,
+    batchDeleteAdmins,
+    batchResetpwdAdmins,
+    createAdmins,
+    updateAdmins,
+  } from '@/api/permission/user';
   import { type FormRules } from 'naive-ui';
   import { formatDate } from '@/utils/dateUtil';
+
+  // 定义组件名称，用于 keep-alive 缓存
+  defineOptions({
+    name: 'system_user',
+  });
+  onActivated(() => {
+    reloadTable();
+  });
 
   const schemas: FormSchema[] = [
     {
@@ -181,7 +195,7 @@
           },
           {
             label: '禁用',
-            value: 2,
+            value: 0,
           },
         ],
       },
