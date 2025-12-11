@@ -124,6 +124,15 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/inquiry/withdrawRecord/index.vue'),
       },
       {
+        path: 'withdrawAudit',
+        name: 'inquiry_withdraw_audit',
+        meta: {
+          title: '待审核提现',
+          keepAlive: true,
+        },
+        component: () => import('@/views/inquiry/withdrawAudit/index.vue'),
+      },
+      {
         path: 'withdrawFlow',
         name: 'inquiry_withdraw_flow',
         meta: {
@@ -133,13 +142,49 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/inquiry/withdrawFlow/index.vue'),
       },
       {
-        path: 'withdrawAudit',
-        name: 'inquiry_withdraw_audit',
+        path: 'withdrawSetting',
+        name: 'inquiry_withdraw_setting',
         meta: {
-          title: '待审核提现',
+          title: '提现设置',
           keepAlive: true,
         },
-        component: () => import('@/views/inquiry/withdrawAudit/index.vue'),
+        component: () => import('@/views/inquiry/withdrawSetting/index.vue'),
+      },
+      {
+        path: 'blacklistUser',
+        name: 'inquiry_blacklist_user',
+        meta: {
+          title: '黑名单用户',
+          keepAlive: true,
+        },
+        component: () => import('@/views/inquiry/blacklistUser/index.vue'),
+      },
+      {
+        path: 'commissionRate',
+        name: 'inquiry_commission_rate',
+        meta: {
+          title: '裂变分佣比例',
+          keepAlive: true,
+        },
+        component: () => import('@/views/inquiry/commissionRate/index.vue'),
+      },
+      {
+        path: 'fissionRecord',
+        name: 'inquiry_fission_record',
+        meta: {
+          title: '裂变收益记录',
+          keepAlive: true,
+        },
+        component: () => import('@/views/inquiry/fissionRecord/index.vue'),
+      },
+      {
+        path: 'onlineClass',
+        name: 'inquiry_online_class',
+        meta: {
+          title: '在线课堂',
+          keepAlive: true,
+        },
+        component: () => import('@/views/inquiry/onlineClass/index.vue'),
       },
     ],
   },

@@ -18,6 +18,10 @@ import AbnormalDataMock from '../../../../mock/inquiry/abnormalData';
 import WithdrawRecordMock from '../../../../mock/inquiry/withdrawRecord';
 import WithdrawFlowMock from '../../../../mock/inquiry/withdrawFlow';
 import WithdrawAuditMock from '../../../../mock/inquiry/withdrawAudit';
+import WithdrawSettingMock from '../../../../mock/inquiry/withdrawSetting';
+import BlacklistUserMock from '../../../../mock/inquiry/blacklistUser';
+import FissionRecordMock from '../../../../mock/inquiry/fissionRecord';
+import OnlineClassMock from '../../../../mock/inquiry/onlineClass';
 
 export default [
   UserMock,
@@ -38,4 +42,8 @@ export default [
   WithdrawRecordMock,
   WithdrawFlowMock,
   WithdrawAuditMock,
+  WithdrawSettingMock,
+  BlacklistUserMock,
+  FissionRecordMock,
+  OnlineClassMock,
 ];
