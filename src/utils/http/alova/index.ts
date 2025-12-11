@@ -74,9 +74,7 @@ export const Alova = createAlova({
   },
   responded: {
     onSuccess: async (response, method) => {
-      // console.log('🚀 ~ responded ~ response:', response, method);
       const res = (response.json && (await response.json())) || response.body;
-      console.log('🚀 ~ responded ~ res:', res);
       // 是否返回原生响应头 比如：需要获取响应头时使用该属性
       if (method.meta?.isReturnNativeResponse) {
         return res;

@@ -132,6 +132,15 @@ const routes: Array<RouteRecordRaw> = [
         },
         component: () => import('@/views/inquiry/withdrawFlow/index.vue'),
       },
+      {
+        path: 'withdrawAudit',
+        name: 'inquiry_withdraw_audit',
+        meta: {
+          title: '待审核提现',
+          keepAlive: true,
+        },
+        component: () => import('@/views/inquiry/withdrawAudit/index.vue'),
+      },
     ],
   },
 ];

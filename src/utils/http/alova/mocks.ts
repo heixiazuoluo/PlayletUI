@@ -17,6 +17,7 @@ import AdRevenueMock from '../../../../mock/inquiry/adRevenue';
 import AbnormalDataMock from '../../../../mock/inquiry/abnormalData';
 import WithdrawRecordMock from '../../../../mock/inquiry/withdrawRecord';
 import WithdrawFlowMock from '../../../../mock/inquiry/withdrawFlow';
+import WithdrawAuditMock from '../../../../mock/inquiry/withdrawAudit';
 
 export default [
   UserMock,
@@ -36,4 +37,5 @@ export default [
   AbnormalDataMock,
   WithdrawRecordMock,
   WithdrawFlowMock,
+  WithdrawAuditMock,
 ];

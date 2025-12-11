@@ -305,7 +305,6 @@
   // 获取列表数据
   const loadDataTable = async (res) => {
     const data = await getAppList({ ...getFieldsValue(), ...res });
-    console.log(data);
     return data;
   };
   // 操作栏

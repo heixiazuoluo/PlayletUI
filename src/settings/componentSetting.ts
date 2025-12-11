@@ -8,7 +8,7 @@ export default {
       // 接口返回的数据字段名
       listField: 'Data',
       // 接口返回总页数字段名
-      totalField: 'Total',
+      totalField: 'pageCount',
       //总数字段名
       countField: 'Total',
     },

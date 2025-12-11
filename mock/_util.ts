@@ -9,7 +9,8 @@ export function resultSuccess(result, { message = 'ok' } = {}) {
       pageIndex: result.page,
       pageSize: result.pageSize,
       Data: result.list,
-      Total: result.pageCount,
+      Total: result.itemCount,
+      pageCount: result.pageCount,
     });
   }
   const data = Mock.mock({
