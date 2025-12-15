@@ -8,11 +8,11 @@
         label-placement="left"
         :label-width="100"
       >
-        <n-form-item label="类型" path="type">
+        <!-- <n-form-item label="类型" path="type">
           <span>{{ formParams.type === 1 ? '侧边栏菜单' : '' }}</span>
-        </n-form-item>
+        </n-form-item> -->
         <n-form-item label="标题" path="label">
-          <n-input placeholder="请输入标题" v-model:value="formParams.label" />
+          <n-input placeholder="请输入标题" v-model:value="formParams.Menuname" />
         </n-form-item>
         <n-form-item label="副标题" path="subtitle">
           <n-input placeholder="请输入副标题" v-model:value="formParams.subtitle" />
@@ -77,7 +77,7 @@
   const message = useMessage();
   const formRef: any = ref(null);
   const defaultValueRef = () => ({
-    label: '',
+    Menuname: '',
     type: 1,
     subtitle: '',
     openType: 1,

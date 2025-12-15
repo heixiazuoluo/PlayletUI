@@ -56,6 +56,9 @@
                   :virtual-scroll="true"
                   :pattern="pattern"
                   :data="treeData"
+                  key-field="Id"
+                  label-field="Menuname"
+                  children-field="Children"
                   :expandedKeys="expandedKeys"
                   style="max-height: 650px; overflow: hidden"
                   @update:selected-keys="selectedTree"
@@ -86,34 +89,55 @@
             v-if="isEditMenu"
             class="py-4"
           >
-            <n-form-item label="类型" path="type">
-              <span>{{ formParams.type === 1 ? '侧边栏菜单' : '' }}</span>
-            </n-form-item>
-            <n-form-item label="标题" path="label">
-              <n-input placeholder="请输入标题" v-model:value="formParams.label" />
-            </n-form-item>
-            <n-form-item label="副标题" path="subtitle">
-              <n-input placeholder="请输入副标题" v-model:value="formParams.subtitle" />
-            </n-form-item>
-            <n-form-item label="路径" path="path">
-              <n-input placeholder="请输入路径" v-model:value="formParams.path" />
-            </n-form-item>
-            <n-form-item label="打开方式" path="openType">
-              <n-radio-group v-model:value="formParams.openType" name="openType">
+            <n-form-item label="菜单类型" path="Menutype">
+              <n-radio-group v-model:value="formParams.Menutype" name="Menutype">
                 <n-space>
-                  <n-radio :value="1">当前窗口</n-radio>
-                  <n-radio :value="2">新窗口</n-radio>
+                  <n-radio :value="1">目录</n-radio>
+                  <n-radio :value="2">页面</n-radio>
+                  <n-radio :value="3">按钮</n-radio>
                 </n-space>
               </n-radio-group>
             </n-form-item>
-            <n-form-item label="菜单权限" path="auth">
-              <n-input placeholder="请输入权限，多个权限用，分割" v-model:value="formParams.auth" />
+            <n-form-item label="菜单名称" path="Menuname">
+              <n-input placeholder="请输入菜单名称" v-model:value="formParams.Menuname" />
             </n-form-item>
-            <n-form-item path="auth" style="margin-left: 100px">
+            <!-- 目录和页面显示图标 -->
+            <n-form-item v-if="formParams.Menutype === 1" label="图标" path="Menuicon">
+              <n-input placeholder="请输入图标" v-model:value="formParams.Menuicon" />
+            </n-form-item>
+            <!-- 页面和按钮显示权限标识 -->
+            <n-form-item
+              v-if="formParams.Menutype === 2 || formParams.Menutype === 3"
+              label="权限标识"
+              path="Authorize"
+            >
+              <n-input placeholder="请输入权限标识" v-model:value="formParams.Authorize" />
+            </n-form-item>
+            <!-- 页面显示请求地址 -->
+            <n-form-item v-if="formParams.Menutype === 2" label="请求地址" path="Menuurl">
+              <n-input placeholder="请输入请求地址" v-model:value="formParams.Menuurl" />
+            </n-form-item>
+            <n-form-item label="显示排序" path="Menusort">
+              <n-input-number
+                placeholder="请输入显示排序"
+                v-model:value="formParams.Menusort"
+                :min="0"
+                style="width: 100%"
+              />
+            </n-form-item>
+            <n-form-item label="菜单状态" path="Menustatus">
+              <n-radio-group v-model:value="formParams.Menustatus" name="Menustatus">
+                <n-space>
+                  <n-radio :value="1">启用</n-radio>
+                  <n-radio :value="0">禁用</n-radio>
+                </n-space>
+              </n-radio-group>
+            </n-form-item>
+            <n-form-item style="margin-left: 100px">
               <n-space>
-                <n-button type="primary" :loading="subLoading" @click="formSubmit"
-                  >保存修改</n-button
-                >
+                <n-button type="primary" :loading="subLoading" @click="formSubmit">
+                  保存修改
+                </n-button>
                 <n-button @click="handleReset">重置</n-button>
                 <n-button @click="handleDel">删除</n-button>
               </n-space>
@@ -126,25 +150,38 @@
   </div>
 </template>
 <script lang="ts" setup>
-  import { ref, unref, reactive, onMounted, computed } from 'vue';
+  import { ref, unref, reactive, onMounted, computed, nextTick } from 'vue';
   import { useDialog, useMessage } from 'naive-ui';
   import { DownOutlined, AlignLeftOutlined, SearchOutlined, FormOutlined } from '@vicons/antd';
   import { getMenuList } from '@/api/system/menu';
   import { getTreeItem } from '@/utils';
   import CreateDrawer from './CreateDrawer.vue';
-  import type { ListDate } from '@/api/system/menu';
+  import type { ListDate, updateMenu } from '@/api/system/menu';
 
   const rules = {
-    label: {
+    // Menutype: {
+    //   required: true,
+    //   type: 'number',
+    //   message: '请选择菜单类型',
+    //   trigger: 'change',
+    // },
+    Menuname: {
       required: true,
-      message: '请输入标题',
+      message: '请输入菜单名称',
       trigger: 'blur',
     },
-    path: {
-      required: true,
-      message: '请输入路径',
-      trigger: 'blur',
-    },
+    // Menusort: {
+    //   required: true,
+    //   type: 'number',
+    //   message: '请输入显示排序',
+    //   trigger: 'blur',
+    // },
+    // Menustatus: {
+    //   required: true,
+    //   type: 'number',
+    //   message: '请选择菜单状态',
+    //   trigger: 'change',
+    // },
   };
 
   const formRef: any = ref(null);
@@ -183,12 +220,23 @@
   ]);
 
   const formParams = reactive({
-    type: 1,
-    label: '',
-    subtitle: '',
-    path: '',
-    auth: '',
-    openType: 1,
+    Id: 0,
+    Createtime: '',
+    Modifytime: '',
+    Creatorid: 0,
+    Modifierid: 0,
+    Parentid: 0,
+    Menuname: '',
+    Menuicon: '',
+    Menuurl: '',
+    Menutarget: '',
+    Menusort: 0,
+    Menutype: 1,
+    Menustatus: 1,
+    Authorize: '',
+    Remark: '',
+    ParentName: '',
+    Children: [],
   });
 
   function selectAddMenu(key: string) {
@@ -204,14 +252,14 @@
 
   function selectedTree(keys) {
     if (keys.length) {
-      // console.log('treeData', treeData.value);
       const treeItem = getTreeItem(unref(treeData), keys[0]);
-      // console.log('treeItem', treeItem);
-      treeItemKey.value = keys;
-      treeItemTitle.value = treeItem.label;
-      Object.assign(formParams, treeItem);
-      // console.log('formParams', formParams);
-      isEditMenu.value = true;
+      nextTick(() => {
+        treeItemKey.value = keys;
+        treeItemTitle.value = treeItem.Menuname;
+        console.log(treeItem);
+        Object.assign(formParams, treeItem);
+        isEditMenu.value = true;
+      });
     } else {
       isEditMenu.value = false;
       treeItemKey.value = [];
@@ -240,9 +288,10 @@
   }
 
   function formSubmit() {
-    formRef.value.validate((errors: boolean) => {
+    formRef.value.validate(async (errors: boolean) => {
       if (!errors) {
-        message.error('抱歉，您没有该权限');
+        const res = await updateMenu(formParams);
+        console.log(formParams);
       } else {
         message.error('请填写完整信息');
       }
@@ -259,10 +308,9 @@
 
   onMounted(async () => {
     const treeMenuList = await getMenuList();
-    const keys = treeMenuList.Data.map((item) => item.key);
-    Object.assign(formParams, keys);
-    treeData.value = treeMenuList.Data;
-    console.log('treeData.value', treeData.value);
+    // const keys = treeMenuList.map((item) => item.key);
+    // Object.assign(formParams, keys);
+    treeData.value = treeMenuList;
     loading.value = false;
   });
 

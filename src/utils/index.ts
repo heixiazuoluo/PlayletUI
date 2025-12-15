@@ -3,7 +3,7 @@ import type { App, Plugin, Component } from 'vue';
 import { NIcon, NTag } from 'naive-ui';
 import { PageEnum } from '@/enums/pageEnum';
 import { isObject } from './is/index';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, isArray } from 'lodash-es';
 /**
  * render 图标
  * */
@@ -161,11 +161,11 @@ export const withInstall = <T extends Component>(component: T, alias?: string) =
 let result = null;
 export function getTreeItem(data: any[], key?: string | number): any {
   data.map((item) => {
-    if (item.key === key) {
+    if (item.Id === key) {
       result = item;
     } else {
-      if (item.children && item.children.length) {
-        getTreeItem(item.children, key);
+      if (item.Children && item.Children.length) {
+        getTreeItem(item.Children, key);
       }
     }
   });

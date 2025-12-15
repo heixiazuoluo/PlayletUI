@@ -72,7 +72,9 @@
   });
 
   function showModal() {
-    resetFields();
+    setTimeout(() => {
+      resetFields();
+    }, 50);
     openModal();
   }
 

@@ -57,11 +57,12 @@ export const Alova = createAlova({
   cacheLogger: process.env.NODE_ENV === 'development',
   requestAdapter: mockAdapter,
   beforeRequest(method) {
+    method.config.headers.accept = 'text/plain';
     const userStore = useUser();
     const token = userStore.getToken;
     // 添加 token 到请求头
     if (!method.meta?.ignoreToken && token) {
-      method.config.headers['authorization'] = token;
+      method.config.headers['authorization'] = `Bearer ${token}`;
     }
     // 处理 api 请求前缀
     const isUrlStr = isUrl(method.url as string);
@@ -74,7 +75,12 @@ export const Alova = createAlova({
   },
   responded: {
     onSuccess: async (response, method) => {
+      // console.log('🚀 ~ responded ~ response:', response, method);
+
       const res = (response.json && (await response.json())) || response.body;
+      if (method.url === '/api/am/v1/auths/menu/list') {
+        return res;
+      }
       // 是否返回原生响应头 比如：需要获取响应头时使用该属性
       if (method.meta?.isReturnNativeResponse) {
         return res;
