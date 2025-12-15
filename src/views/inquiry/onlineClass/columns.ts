@@ -27,6 +27,10 @@ export const statusMap: Record<number, { text: string; type: 'success' | 'error'
 
 export const columns: BasicColumn<OnlineClassData>[] = [
   {
+    type: 'selection',
+    width: 50,
+  },
+  {
     title: 'ID',
     key: 'id',
     width: 80,

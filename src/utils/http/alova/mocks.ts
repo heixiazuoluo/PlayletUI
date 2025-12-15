@@ -22,6 +22,7 @@ import WithdrawSettingMock from '../../../../mock/inquiry/withdrawSetting';
 import BlacklistUserMock from '../../../../mock/inquiry/blacklistUser';
 import FissionRecordMock from '../../../../mock/inquiry/fissionRecord';
 import OnlineClassMock from '../../../../mock/inquiry/onlineClass';
+import LeaderManageMock from '../../../../mock/leader/manage';
 
 export default [
   UserMock,
@@ -46,4 +47,5 @@ export default [
   BlacklistUserMock,
   FissionRecordMock,
   OnlineClassMock,
+  LeaderManageMock,
 ];

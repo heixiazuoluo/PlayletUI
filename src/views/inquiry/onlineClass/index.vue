@@ -12,6 +12,7 @@
         :actionColumn="actionColumn"
         :scroll-x="800"
         :striped="true"
+        :checked-row-keys="checkedKeys"
         @update:checked-row-keys="onCheckedRow"
       >
         <template #tableTitle>
