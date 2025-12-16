@@ -41,3 +41,10 @@ export function updateRole(data) {
 export function batchDeleteRole(ids: number[]) {
   return Alova.Post('/am/v1/auths/role/batch_delete', ids);
 }
+
+/**
+ * @description: 菜单树数据
+ */
+export function getMenuTreeData() {
+  return Alova.Get('/am/v1/data/common/listtreedata');
+}

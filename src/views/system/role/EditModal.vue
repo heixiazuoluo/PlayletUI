@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, nextTick } from 'vue';
+  import { ref, nextTick, computed } from 'vue';
   import { FormSchema, useForm } from '@/components/Form';
   import { basicModal, useModal } from '@/components/Modal';
   import { updateRole } from '@/api/system/role';
@@ -71,8 +71,10 @@
     subBtuText: '保存',
   });
 
-  function showModal(record: any) {
+  async function showModal(record: any) {
     currentId.value = record.Id;
+    // 设置已选中的菜单
+    checkedKeys.value = record.MenuIds || [];
     openModal();
     nextTick(() => {
       setFieldsValue({

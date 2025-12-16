@@ -74,29 +74,29 @@
               </n-space>
             </n-radio-group>
           </n-form-item>
-          <n-form-item label="角色" path="role">
-            <n-checkbox-group v-model:value="fromData.role">
+          <n-form-item label="角色" path="RoleIds">
+            <n-radio-group v-model:value="fromData.RoleIds">
               <n-space item-style="display: flex;">
-                <n-checkbox
+                <n-radio
                   v-for="item in roleLIst"
                   :key="item.id"
                   :value="item.id"
                   :label="item.label"
                 />
               </n-space>
-            </n-checkbox-group>
+            </n-radio-group>
           </n-form-item>
           <n-form-item label="游戏" path="games">
-            <n-checkbox-group v-model:value="fromData.games">
+            <n-radio-group v-model:value="fromData.games">
               <n-space item-style="display: flex;">
-                <n-checkbox
+                <n-radio
                   v-for="item in gameLIst"
                   :key="item.id"
                   :value="item.id"
                   :label="item.label"
                 />
               </n-space>
-            </n-checkbox-group>
+            </n-radio-group>
           </n-form-item>
           <n-form-item label="备注" path="remark">
             <n-input v-model:value="fromData.remark" type="textarea" placeholder="请输入备注" />
@@ -138,7 +138,7 @@
   </n-flex>
 </template>
 <script lang="ts" setup>
-  import { computed, h, nextTick, onActivated, reactive, ref } from 'vue';
+  import { computed, h, nextTick, onActivated, onMounted, reactive, ref } from 'vue';
   import { PlusOutlined, DeleteFilled } from '@vicons/antd';
 
   import { BasicTable, TableAction } from '@/components/Table';
@@ -151,6 +151,7 @@
     createAdmins,
     updateAdmins,
   } from '@/api/permission/user';
+  import { getCommonRoles, getCommonGames } from '@/api/common';
   import { type FormRules } from 'naive-ui';
   import { formatDate } from '@/utils/dateUtil';
 
@@ -360,26 +361,30 @@
     uid: null,
   };
   // 角色列表
-  const roleLIst = [
-    {
-      id: 1,
-      label: '超级管理员',
-    },
-    {
-      id: 2,
-      label: '管理员',
-    },
-  ];
-  const gameLIst = [
-    {
-      id: 1,
-      label: 'xxxx',
-    },
-    {
-      id: 2,
-      label: 'bbbb',
-    },
-  ];
+  const roleLIst = ref<{ id: number; label: string }[]>([]);
+  // 游戏/应用列表
+  const gameLIst = ref<{ id: number; label: string }[]>([]);
+
+  // 获取角色和游戏列表
+  async function loadCommonData() {
+    try {
+      const [rolesRes, gamesRes] = await Promise.all([getCommonRoles(), getCommonGames()]);
+      roleLIst.value = (rolesRes.Data || []).map((item) => ({
+        id: item.Id,
+        label: item.RoleName,
+      }));
+      gameLIst.value = (gamesRes.Data || []).map((item) => ({
+        id: item.Id,
+        label: item.name,
+      }));
+    } catch (error) {
+      console.error('加载公共数据失败', error);
+    }
+  }
+
+  onMounted(() => {
+    loadCommonData();
+  });
 
   const showModal = ref(false);
   const fromData = ref<ListData>({

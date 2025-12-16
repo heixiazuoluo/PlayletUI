@@ -12,5 +12,5 @@ export function getUserList(params) {
 
 // app列表
 export function getAppList(params) {
-  return Alova.Get('/app/list', { params });
+  return Alova.Get('/am/v1/data/appinfos/list', { params });
 }

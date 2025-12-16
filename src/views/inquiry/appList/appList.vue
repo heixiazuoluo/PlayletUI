@@ -7,7 +7,7 @@
       <BasicTable
         :columns="columns"
         :request="loadDataTable"
-        :row-key="(row:ListData) => row.Id"
+        :row-key="(row) => row.Id"
         ref="actionRef"
         :actionColumn="actionColumn"
         canResize
@@ -36,7 +36,7 @@
           :rules="rules"
           ref="formRef"
           label-placement="left"
-          :label-width="150"
+          :label-width="180"
           class="py-4"
           style="height: 60vh; overflow-y: scroll"
         >
@@ -52,36 +52,29 @@
           <n-form-item label="联系客服QQ群key" path="kfQQKey">
             <n-input placeholder="请输入客服QQ群key" v-model:value="fromData.kfQQKey" />
           </n-form-item>
+          <n-form-item label="官方 qq 群号" path="kfQQ">
+            <n-input placeholder="请输入官方 qq 群号" v-model:value="fromData.kfQQ" />
+          </n-form-item>
           <n-form-item label="网站域名" path="webUrl">
             <n-input placeholder="请输入网站域名" v-model:value="fromData.webUrl" />
           </n-form-item>
           <n-form-item label="短剧免费解锁集数" path="playletFreeUnlockEpisodes">
-            <n-input
+            <n-input-number
               placeholder="请输入短剧免费解锁集数"
               v-model:value="fromData.playletFreeUnlockEpisodes"
-              :allow-input="onlyAllowNumber"
             />
           </n-form-item>
           <n-form-item label="每看完1个激励广告解锁集数" path="lookOneStimulateUnlockEpisodes">
-            <n-input
+            <n-input-number
               placeholder="请输入"
               v-model:value="fromData.lookOneStimulateUnlockEpisodes"
-              :allow-input="onlyAllowNumber"
             />
           </n-form-item>
           <n-form-item label="信息流循环调用时间间隔" path="streamLoopCallInterval">
-            <n-input
-              placeholder="请输入"
-              v-model:value="fromData.streamLoopCallInterval"
-              :allow-input="onlyAllowNumber"
-            />
+            <n-input-number placeholder="请输入" v-model:value="fromData.streamLoopCallInterval" />
           </n-form-item>
           <n-form-item label="横幅循环调用时间间隔" path="bannerLoopCallInterval">
-            <n-input
-              placeholder="请输入"
-              v-model:value="fromData.bannerLoopCallInterval"
-              :allow-input="onlyAllowNumber"
-            />
+            <n-input-number placeholder="请输入" v-model:value="fromData.bannerLoopCallInterval" />
           </n-form-item>
           <n-form-item label="ulinkid" path="ulinkid">
             <n-input placeholder="请输入" v-model:value="fromData.ulinkid" />
@@ -95,6 +88,16 @@
           <n-form-item label="版本号" path="app_version">
             <n-input placeholder="请输入" v-model:value="fromData.app_version" />
           </n-form-item>
+          <n-form-item label="更新公告内容" path="announcementContent">
+            <div style="display: block; width: 100%">
+              <QuillEditor
+                style="height: 250px; width: 100%"
+                :options="options"
+                contentType="html"
+                v-model:content="fromData.announcementContent"
+              />
+            </div>
+          </n-form-item>
           <n-form-item label="协议地址" path="agreement">
             <n-input placeholder="请输入" v-model:value="fromData.agreement" />
           </n-form-item>
@@ -102,20 +105,12 @@
             <n-input placeholder="请输入" v-model:value="fromData.privicy" />
           </n-form-item>
           <n-form-item label="单个红包最大金币数量" path="max_redpack_amount">
-            <n-input
-              placeholder="请输入"
-              :allow-input="onlyAllowNumber"
-              v-model:value="fromData.max_redpack_amount"
-            />
+            <n-input-number placeholder="请输入" v-model:value="fromData.max_redpack_amount" />
           </n-form-item>
           <n-form-item label="提现审核金额(元)" path="maxTiXianCount">
-            <n-input
-              placeholder="请输入"
-              :allow-input="onlyAllowNumber"
-              v-model:value="fromData.maxTiXianCount"
-            />
+            <n-input-number placeholder="请输入" v-model:value="fromData.maxTiXianCount" />
+            <div class="ml-4">注释：大于等于提现审核金额</div>
           </n-form-item>
-          <div class="ml-40">注释：大于等于提现审核金额</div>
           <n-form-item label="是否提现到本游戏" path="isWeiXinTiXian">
             <n-radio-group v-model:value="fromData.isWeiXinTiXian">
               <n-space>
@@ -155,6 +150,14 @@
               </n-space>
             </n-radio-group>
           </n-form-item>
+          <n-form-item label="是否启用双开屏" path="enableDualScreenAD">
+            <n-radio-group v-model:value="fromData.enableDualScreenAD">
+              <n-space>
+                <n-radio :value="0"> 否 </n-radio>
+                <n-radio :value="1"> 是 </n-radio>
+              </n-space>
+            </n-radio-group>
+          </n-form-item>
           <n-form-item label="备注" path="remark">
             <n-input v-model:value="fromData.remark" type="textarea" placeholder="请输入备注" />
           </n-form-item>
@@ -173,12 +176,12 @@
         preset="dialog"
         title="设置公告"
       >
-        <QuillEditor
+        <!-- <QuillEditor
           ref="quillEditor"
           style="height: 350px"
           :options="options"
           v-model:content="formRecordData.announcementContent"
-        />
+        /> -->
         <div class="flex mt-4">
           <div class="mr-4">状态:</div>
           <n-radio-group v-model:value="formRecordData.status">
@@ -191,9 +194,9 @@
         <template #action>
           <n-space>
             <n-button @click="() => (showRecordModal = false)">取消</n-button>
-            <n-button type="info" :loading="formBtnLoading" @click="confirmRecordForm"
-              >确定</n-button
-            >
+            <n-button type="info" :loading="formBtnLoading" @click="confirmRecordForm">
+              确定
+            </n-button>
           </n-space>
         </template>
       </n-modal>
@@ -216,18 +219,16 @@
               />
             </n-form-item>
             <n-form-item label="一个微信每天最多登录几台手机" path="num1">
-              <n-input
+              <n-input-number
                 :disabled="!fkData.isChange"
                 placeholder="请输入"
-                :allow-input="onlyAllowNumber"
                 v-model:value="fkData.num1"
               />
             </n-form-item>
             <n-form-item label="一个IP每天最多允许几台手机" path="num2">
-              <n-input
+              <n-input-number
                 :disabled="!fkData.isChange"
                 placeholder="请输入"
-                :allow-input="onlyAllowNumber"
                 v-model:value="fkData.num2"
               />
             </n-form-item>
@@ -252,12 +253,25 @@
   import { BasicTable, TableAction } from '@/components/Table';
   import { BasicForm, FormSchema, useForm } from '@/components/Form/index';
   import { columns, ListData } from './colums';
-  import { getAppList } from '@/api/table/list';
+  import { getAppList, updateApp, createApp } from '@/api/inquiry/app';
   import { type FormRules } from 'naive-ui';
   import { onlyAllowNumber } from '@/utils';
   import { basicModal, useModal } from '@/components/Modal';
 
   const router = useRouter();
+  // 富文本配置
+  const options = {
+    placeholder: '请输入图文内容...',
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+        ['link', 'image'],
+        ['clean'],
+      ],
+    },
+  };
 
   const schemas: FormSchema[] = [
     {
@@ -269,12 +283,16 @@
       },
     },
     {
-      field: 'type',
+      field: 'status',
       component: 'NSelect',
       label: '状态',
       componentProps: {
         placeholder: '请选择',
         options: [
+          {
+            label: '全部',
+            value: -1,
+          },
           {
             label: '启用',
             value: 1,
@@ -296,11 +314,11 @@
   });
   // 搜索
   const handleSubmit = (val) => {
-    console.log('搜索', val);
+    reloadTable();
   };
   // 重置
   const handleReset = () => {
-    console.log('重置');
+    reloadTable();
   };
   // 获取列表数据
   const loadDataTable = async (res) => {
@@ -376,25 +394,51 @@
   }
 
   function handleEdit(record: Recordable) {
+    isAdd.value = false;
     nextTick(() => {
-      fromData.value = record as ListData;
-      showModal.value = true;
+      fromData.value = { ...record } as ListData;
     });
+    showModal.value = true;
   }
   const FROMDATA = {
     Id: 0,
     name: '',
     appId: '',
+    appSecret: '',
     ulinkid: '',
+    ulinkkey: '',
     status: 0,
     app_version: '',
+    kfQQKey: '',
+    kfQQ: '',
+    webUrl: '',
+    Kfqg: '',
+    enableDualScreenAD: 0,
+    playletFreeUnlockEpisodes: 0,
+    lookOneStimulateUnlockEpisodes: 0,
+    streamLoopCallInterval: 0,
+    bannerLoopCallInterval: 0,
+    downloadAppUrl: '',
+    agreement: '',
+    privicy: '',
+    max_redpack_amount: 0,
+    maxTiXianCount: 0,
+    isWeiXinTiXian: 0,
+    weixinMchid: '',
+    weixinCerPath: '',
+    weixinSerialNo: '',
+    weixinAPIV3: '',
+    weixinNotify_url: '',
+    loginType: 0,
+    remark: '',
+    announcementContent: '',
   };
+  const isAdd = ref(false);
   // 新建
   function addTable() {
-    nextTick(() => {
-      fromData.value = { ...FROMDATA };
-      showModal.value = true;
-    });
+    fromData.value = { ...FROMDATA };
+    isAdd.value = true;
+    showModal.value = true;
   }
   const showModal = ref(false);
 
@@ -418,14 +462,18 @@
   function confirmForm(e) {
     e.preventDefault();
     formBtnLoading.value = true;
-    formRef.value.validate((errors) => {
+    formRef.value.validate(async (errors) => {
       if (!errors) {
-        // console.log(fromData.value);
-        window['$message'].success('新建成功');
-        setTimeout(() => {
-          showModal.value = false;
-          reloadTable();
-        });
+        console.log(fromData.value);
+        if (isAdd.value) {
+          await createApp(fromData.value);
+          window['$message'].success('新建成功');
+        } else {
+          await updateApp(fromData.value);
+          window['$message'].success('编辑成功');
+        }
+        showModal.value = false;
+        reloadTable();
       } else {
         window['$message'].error('请填写完整信息');
       }
@@ -451,45 +499,12 @@
         status: announcementStatus,
       };
       showRecordModal.value = true;
-      setTimeout(() => {
-        const html = announcementContent;
-        quillEditor.value.setHTML(html);
-      }, 20);
     });
   }
-  const options = reactive({
-    modules: {
-      toolbar: [
-        ['bold', 'italic', 'underline', 'strike'], // toggled buttons
-        ['blockquote', 'code-block'],
 
-        [{ header: 1 }, { header: 2 }], // custom button values
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
-        [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
-        [{ direction: 'rtl' }], // text direction
-
-        [{ size: ['small', false, 'large', 'huge'] }], // custom dropdown
-        [{ header: [1, 2, 3, 4, 5, 6, false] }],
-
-        [{ color: [] }, { background: [] }], // dropdown with defaults from theme
-        [{ font: [] }],
-        [{ align: [] }],
-        ['clean'],
-        ['image'],
-      ],
-    },
-    theme: 'snow',
-    placeholder: '输入您喜欢的内容吧！',
-  });
-  const quillEditor = ref();
-  function getHtmlVal() {
-    return quillEditor.value.getHTML();
-  }
   // 提交公告
   const confirmRecordForm = () => {
     console.log(formRecordData.value);
-    console.log(getHtmlVal());
     showRecordModal.value = false;
   };
 

@@ -7,6 +7,7 @@
 </template>
 
 <script lang="ts" setup>
+  import { ref, computed } from 'vue';
   import { FormSchema, useForm } from '@/components/Form';
   import { basicModal, useModal } from '@/components/Modal';
   import { createRole } from '@/api/system/role';
@@ -71,7 +72,9 @@
     subBtuText: '保存',
   });
 
-  function showModal() {
+
+  async function showModal() {
+    // 重置表单和选中项
     setTimeout(() => {
       resetFields();
     }, 50);
@@ -82,7 +85,9 @@
     const formRes = await submit();
     if (formRes) {
       try {
-        await createRole(formRes);
+        await createRole({
+          ...formRes,
+        });
         window['$message'].success('新增成功');
         closeModal();
         emit('success');

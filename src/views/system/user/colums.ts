@@ -24,8 +24,8 @@ export interface ListData {
   QQ: string | null;
   channel: string | null;
   uid: string | null;
-  role?: number[];
-  games?: number[];
+  RoleIds?: number;
+  games?: number;
 }
 
 export const columns: BasicColumn<ListData>[] = [

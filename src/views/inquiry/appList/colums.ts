@@ -17,7 +17,7 @@ export interface ListData {
   status: number;
 
   /** 公告内容（HTML格式） */
-  announcementContent?: string;
+  announcementContent?: string | any;
   /** 公告状态：1-启用，0-禁用 */
   announcementStatus?: 1 | 0;
 
@@ -28,6 +28,8 @@ export interface ListData {
   /** IP最多几台手机 */
   fkMaxIp?: number;
 
+  kfQQ?: string;
+  enableDualScreenAD?: number;
   /** 小程序密钥（部分隐藏） */
   appSecret?: string;
   /** 账户名称 */
@@ -143,6 +145,34 @@ export interface ListData {
   typeID?: number;
   /** 用户OpenID（可能为空） */
   openid?: string | null;
+  /** 弹窗广告调用间隔 */
+  popUpLoopCallInterval?: number;
+  /** 是否开启其他页面弹窗 */
+  isOpenOtherPagepopUp?: number;
+  /** 是否开启开屏广告 */
+  isOpenOpenscene?: number;
+  /** 是否开启插屏广告 */
+  isOpenInterrupt?: number;
+  /** 是否开启信息流广告 */
+  isOpenStream?: number;
+  /** 是否开启横幅广告 */
+  isOpenBanner?: number;
+  /** 是否开启激励广告 */
+  isOpenStimulate?: number;
+  /** 是否开启短视频广告 */
+  isOpenShorts?: number;
+  /** 游戏包名 */
+  gamePackBag?: string;
+  /** 关联ID1 */
+  Id1?: number;
+  /** 客服ID */
+  kfid?: number;
+  /** 游戏ID */
+  gid?: number;
+  /** 添加时间1 */
+  addTime1?: string;
+  /** 创建者ID */
+  CreatorId?: number;
 }
 
 export const columns: BasicColumn<ListData>[] = [
