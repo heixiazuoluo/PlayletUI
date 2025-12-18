@@ -44,3 +44,10 @@ export function createAdmins(params) {
 export function updateAdmins(params) {
   return Alova.Post<InResult>('/am/v1/auths/admins/update', params);
 }
+/**
+ * @description: 获取管理员信息
+ *
+ */
+export function getAdminsinfo(id: number) {
+  return Alova.Get<InResult>('/am/v1/auths/admins/getadminsinfo?id=' + id);
+}

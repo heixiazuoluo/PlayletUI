@@ -150,10 +150,11 @@
     batchResetpwdAdmins,
     createAdmins,
     updateAdmins,
+    getAdminsinfo,
   } from '@/api/permission/user';
   import { getCommonRoles, getCommonGames } from '@/api/common';
   import { type FormRules } from 'naive-ui';
-  import { formatDate } from '@/utils/dateUtil';
+  import { formatDate, daXieToXiaoXie } from '@/utils/dateUtil';
 
   // 定义组件名称，用于 keep-alive 缓存
   defineOptions({
@@ -298,12 +299,13 @@
   // function handleDelete(record: Recordable) {
   //   window['$message'].info('删除');
   // }
-  function handleEdit(record: Recordable) {
-    nextTick(() => {
-      isEdit.value = 1;
-      fromData.value = record as ListData;
-      showModal.value = true;
-    });
+  async function handleEdit(record: Recordable) {
+    isEdit.value = 1;
+    showModal.value = true;
+
+    const res = await getAdminsinfo(record?.id || record?.Id);
+    const DATA = daXieToXiaoXie(res.Data);
+    fromData.value = DATA as ListData;
   }
   function handleResetTab(record: Recordable) {
     nextTick(() => {
@@ -390,8 +392,16 @@
   const fromData = ref<ListData>({
     ...FROMDATA,
   });
-  const rules: FormRules = computed(() => {
+  const rules = computed(() => {
     if (isEdit.value) {
+      return {
+        userID: {
+          required: true,
+          trigger: ['blur', 'input'],
+          message: '请输入名称',
+        },
+      };
+    } else {
       return {
         userID: {
           required: true,
@@ -402,14 +412,6 @@
           required: true,
           trigger: ['blur', 'input'],
           message: '请输入密码',
-        },
-      };
-    } else {
-      return {
-        userID: {
-          required: true,
-          trigger: ['blur', 'input'],
-          message: '请输入名称',
         },
       };
     }

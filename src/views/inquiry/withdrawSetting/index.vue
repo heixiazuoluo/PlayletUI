@@ -7,7 +7,7 @@
       <BasicTable
         :columns="columns"
         :request="loadDataTable"
-        :row-key="(row) => row.id"
+        :row-key="(row) => row.Id"
         ref="actionRef"
         :actionColumn="actionColumn"
         :scroll-x="1400"
@@ -40,12 +40,17 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, h } from 'vue';
+  import { ref, reactive, h, onMounted } from 'vue';
   import { BasicTable, TableAction } from '@/components/Table';
   import { BasicForm, FormSchema, useForm } from '@/components/Form/index';
   import { basicModal, useModal } from '@/components/Modal';
-  import { columns, categoryMap, WithdrawSettingData } from './columns';
-  import { getWithdrawSettingList } from '@/api/inquiry/withdrawSetting';
+  import { columns, typeMap, WithdrawSettingData } from './columns';
+  import {
+    getWithdrawSettingList,
+    createWithdrawSetting,
+    updateWithdrawSetting,
+  } from '@/api/inquiry/withdrawSetting';
+  import { getCommonGames } from '@/api/common';
   import { PlusOutlined } from '@vicons/antd';
 
   defineOptions({
@@ -55,9 +60,10 @@
   const actionRef = ref();
   const isEdit = ref(false);
   const currentId = ref<number | null>(null);
+  const gameOptions = ref<{ label: string; value: number }[]>([]);
 
-  // 类别选项
-  const categoryOptions = Object.entries(categoryMap).map(([value, label]) => ({
+  // 类别选项：0-玩家，1-团长，2-师傅
+  const typeOptions = Object.entries(typeMap).map(([value, label]) => ({
     label,
     value: Number(value),
   }));
@@ -65,25 +71,22 @@
   // 搜索表单
   const schemas: FormSchema[] = [
     {
-      field: 'appName',
+      field: 'apps',
       component: 'NSelect',
       label: '游戏',
       componentProps: {
         placeholder: '请选择游戏',
-        options: [
-          { label: '消消乐', value: '消消乐' },
-          { label: '斗地主', value: '斗地主' },
-          { label: '跑酷大作战', value: '跑酷大作战' },
-        ],
+        options: gameOptions,
       },
     },
     {
-      field: 'category',
+      field: 'typeID',
       component: 'NSelect',
       label: '类别',
+      defaultValue: 0,
       componentProps: {
         placeholder: '请选择',
-        options: [{ label: '全部', value: -1 }, ...categoryOptions],
+        options: [...typeOptions],
       },
     },
   ];
@@ -91,37 +94,48 @@
   // 新增/编辑表单配置
   const formSchemas: FormSchema[] = [
     {
-      field: 'appName',
-      component: 'NInput',
-      label: 'App名称',
-      rules: [{ required: true, message: '请输入App名称', trigger: ['blur'] }],
+      field: 'gid',
+      component: 'NSelect',
+      label: '游戏',
+      rules: [{ required: true, type: 'number', message: '请选择游戏', trigger: ['change'] }],
       componentProps: {
-        placeholder: '请输入App名称',
+        placeholder: '请选择游戏',
+        options: gameOptions,
       },
     },
     {
-      field: 'category',
+      field: 'typeID',
       component: 'NSelect',
       label: '类别',
       rules: [{ required: true, type: 'number', message: '请选择类别', trigger: ['change'] }],
       componentProps: {
         placeholder: '请选择类别',
-        options: categoryOptions,
+        options: typeOptions,
       },
     },
     {
-      field: 'withdrawAmount',
+      field: 'label',
+      component: 'NInput',
+      label: '描述',
+      rules: [{ required: true, message: '请输入描述', trigger: ['blur'] }],
+      componentProps: {
+        placeholder: '请输入描述',
+      },
+    },
+    {
+      field: 'value',
       component: 'NInputNumber',
       label: '提现金额',
       rules: [{ required: true, type: 'number', message: '请输入提现金额', trigger: ['blur'] }],
       componentProps: {
         placeholder: '请输入提现金额',
         min: 0,
+        step: 0.1,
         style: { width: '100%' },
       },
     },
     {
-      field: 'dailyLimit',
+      field: 'limit',
       component: 'NInputNumber',
       label: '每日提现次数',
       componentProps: {
@@ -131,16 +145,7 @@
       },
     },
     {
-      field: 'description',
-      component: 'NInput',
-      label: '描述',
-      componentProps: {
-        type: 'textarea',
-        placeholder: '请输入描述',
-      },
-    },
-    {
-      field: 'subsidyAmount',
+      field: 'SubsidyAmount',
       component: 'NInputNumber',
       label: '补贴金额',
       componentProps: {
@@ -150,7 +155,7 @@
       },
     },
     {
-      field: 'subsidyStartTime',
+      field: 'SubsidyStartTime',
       component: 'NDatePicker',
       label: '补贴开始时间',
       componentProps: {
@@ -160,7 +165,7 @@
       },
     },
     {
-      field: 'subsidyEndTime',
+      field: 'SubsidyEndTime',
       component: 'NDatePicker',
       label: '补贴结束时间',
       componentProps: {
@@ -188,7 +193,7 @@
     },
   ];
 
-  const [register, { getFieldsValue }] = useForm({
+  const [register, { getFieldsValue, setFieldsValue: setSearchFieldsValue }] = useForm({
     gridProps: { cols: '1 s:1 m:2 l:3 xl:4 2xl:4' },
     labelWidth: 80,
     schemas,
@@ -240,8 +245,8 @@
   const loadDataTable = async (res) => {
     const formValues = getFieldsValue();
     const params = {
-      appName: formValues.appName || '',
-      category: formValues.category ?? -1,
+      apps: formValues.apps || '',
+      typeID: formValues.typeID,
       ...res,
     };
     return await getWithdrawSettingList(params);
@@ -265,18 +270,18 @@
   // 编辑
   function handleEdit(record: WithdrawSettingData) {
     isEdit.value = true;
-    currentId.value = record.id;
+    currentId.value = record.Id;
     setProps({ title: '编辑' });
     setTimeout(() => {
       setFieldsValue({
-        appName: record.appName,
-        category: record.category,
-        withdrawAmount: record.withdrawAmount,
-        dailyLimit: record.dailyLimit,
-        description: record.description,
-        subsidyAmount: record.subsidyAmount,
-        subsidyStartTime: record.subsidyStartTime,
-        subsidyEndTime: record.subsidyEndTime,
+        gid: record.gid,
+        typeID: record.typeID,
+        label: record.label,
+        value: record.value,
+        limit: record.limit,
+        SubsidyAmount: record.SubsidyAmount,
+        SubsidyStartTime: record.SubsidyStartTime,
+        SubsidyEndTime: record.SubsidyEndTime,
         status: record.status,
       });
     }, 50);
@@ -287,12 +292,49 @@
   const onModalOk = async () => {
     const formRes = await submit();
     if (formRes) {
-      closeModal();
-      window['$message'].success(isEdit.value ? '编辑成功' : '新增成功');
-      reloadTable();
+      try {
+        const params = {
+          ...formRes,
+          Id: isEdit.value ? currentId.value : 0,
+        };
+        if (isEdit.value) {
+          await updateWithdrawSetting(params);
+        } else {
+          await createWithdrawSetting(params);
+        }
+        closeModal();
+        window['$message'].success(isEdit.value ? '编辑成功' : '新增成功');
+        reloadTable();
+      } catch (error) {
+        window['$message'].error(isEdit.value ? '编辑失败' : '新增失败');
+        setSubLoading(false);
+      }
     } else {
       window['$message'].error('验证失败，请填写完整信息');
       setSubLoading(false);
     }
   };
+
+  // 获取游戏列表
+  onMounted(async () => {
+    try {
+      const res = await getCommonGames();
+      const list = res.Data || res;
+      gameOptions.value = list.map((item) => ({
+        label: item.name,
+        value: item.Id,
+      }));
+      // 设置默认值为第一个游戏
+      if (gameOptions.value.length > 0) {
+        console.log(gameOptions.value[0].value);
+        setSearchFieldsValue({ apps: gameOptions.value[0].value });
+        setTimeout(() => {
+          console.log(getFieldsValue());
+          reloadTable();
+        }, 50);
+      }
+    } catch (error) {
+      console.error('获取游戏列表失败', error);
+    }
+  });
 </script>
