@@ -75,28 +75,28 @@
             </n-radio-group>
           </n-form-item>
           <n-form-item label="角色" path="RoleIds">
-            <n-radio-group v-model:value="fromData.RoleIds">
+            <n-checkbox-group v-model:value="fromData.RoleIds">
               <n-space item-style="display: flex;">
-                <n-radio
+                <n-checkbox
                   v-for="item in roleLIst"
                   :key="item.id"
                   :value="item.id"
                   :label="item.label"
                 />
               </n-space>
-            </n-radio-group>
+            </n-checkbox-group>
           </n-form-item>
-          <n-form-item label="游戏" path="games">
-            <n-radio-group v-model:value="fromData.games">
+          <n-form-item label="游戏" path="GameIds">
+            <n-checkbox-group v-model:value="fromData.GameIds">
               <n-space item-style="display: flex;">
-                <n-radio
+                <n-checkbox
                   v-for="item in gameLIst"
                   :key="item.id"
                   :value="item.id"
                   :label="item.label"
                 />
               </n-space>
-            </n-radio-group>
+            </n-checkbox-group>
           </n-form-item>
           <n-form-item label="备注" path="remark">
             <n-input v-model:value="fromData.remark" type="textarea" placeholder="请输入备注" />
@@ -390,18 +390,30 @@
   const fromData = ref<ListData>({
     ...FROMDATA,
   });
-  const rules: FormRules = {
-    userID: {
-      required: true,
-      trigger: ['blur', 'input'],
-      message: '请输入名称',
-    },
-    pwd: {
-      required: true,
-      trigger: ['blur', 'input'],
-      message: '请输入密码',
-    },
-  };
+  const rules: FormRules = computed(() => {
+    if (isEdit.value) {
+      return {
+        userID: {
+          required: true,
+          trigger: ['blur', 'input'],
+          message: '请输入名称',
+        },
+        pwd: {
+          required: true,
+          trigger: ['blur', 'input'],
+          message: '请输入密码',
+        },
+      };
+    } else {
+      return {
+        userID: {
+          required: true,
+          trigger: ['blur', 'input'],
+          message: '请输入名称',
+        },
+      };
+    }
+  });
   // 0: 新建 1: 编辑
   const isEdit = ref(0);
   // 新建
@@ -473,7 +485,12 @@
     formBtnLoading.value = true;
     formRefPwd.value.validate(async (errors) => {
       if (!errors) {
-        await batchResetpwdAdmins({ ...fromData.value }).finally(() => {
+        const Data = {
+          id: fromData.value.id,
+          pwd: fromData.value.pwd,
+        };
+        console.log(Data);
+        await batchResetpwdAdmins({ ...Data }).finally(() => {
           formBtnLoading.value = false;
         });
         // setTimeout(() => {

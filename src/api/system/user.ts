@@ -1,10 +1,13 @@
 import { Alova } from '@/utils/http/alova/index';
+import { getAppEnvConfig } from '@/utils/env';
 
+const { VITE_GLOB_API_URL_PREFIX } = getAppEnvConfig();
 /**
  * @description: 获取登录验证码（返回图片blob）
  */
 export async function getCode(): Promise<string> {
-  const response = await fetch('/api/am/v1/account/captcha', {
+  const url = VITE_GLOB_API_URL_PREFIX + '/am/v1/account/captcha';
+  const response = await fetch(url, {
     method: 'GET',
     credentials: 'include',
   });

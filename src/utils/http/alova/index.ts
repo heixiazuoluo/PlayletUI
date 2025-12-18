@@ -66,6 +66,7 @@ export const Alova = createAlova({
     }
     // 处理 api 请求前缀
     const isUrlStr = isUrl(method.url as string);
+    console.log('isUrlStr', isUrlStr, urlPrefix);
     if (!isUrlStr && urlPrefix) {
       method.url = `${urlPrefix}${method.url}`;
     }
@@ -75,7 +76,6 @@ export const Alova = createAlova({
   },
   responded: {
     onSuccess: async (response, method) => {
-
       const res = (response.json && (await response.json())) || response.body;
       // 是否返回原生响应头 比如：需要获取响应头时使用该属性
       if (method.meta?.isReturnNativeResponse) {
@@ -100,7 +100,7 @@ export const Alova = createAlova({
         return res;
       }
       // 需要登录
-      if (message === '缺少认证令牌，请先登录') {
+      if (ResultEnum.TIMEOUT === code) {
         Modal?.warning({
           title: '提示',
           content: '登录身份已失效，请重新登录!',

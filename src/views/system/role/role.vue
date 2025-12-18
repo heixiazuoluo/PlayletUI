@@ -14,7 +14,7 @@
         @update:checked-row-keys="onCheckedRow"
       >
         <template #tableTitle>
-          <n-button type="primary" @click="addRole">
+          <n-button type="primary" @click="handleAdd">
             <template #icon>
               <n-icon>
                 <PlusOutlined />
@@ -43,49 +43,49 @@
       </BasicTable>
     </n-card>
 
-    <n-modal v-model:show="showModal" :show-icon="false" preset="dialog" :title="editRoleTitle">
-      <div class="py-3 menu-list">
-        <n-tree
-          block-line
-          cascade
-          checkable
-          :virtual-scroll="true"
-          :data="treeData"
-          :expandedKeys="expandedKeys"
-          :checked-keys="checkedKeys"
-          style="max-height: 950px; overflow: hidden"
-          @update:checked-keys="checkedTree"
-          @update:expanded-keys="onExpandedKeys"
-        />
+    <!-- 新增/编辑弹窗 -->
+    <basicModal @register="modalRegister" @on-ok="handleSubmitForm">
+      <div class="pt-4">
+        <BasicForm @register="formRegister" />
+        <div class="px-4">
+          <div class="mb-2 font-medium">菜单权限</div>
+          <div class="border rounded p-2" style="max-height: 300px; overflow-y: auto">
+            <n-tree
+              block-line
+              cascade
+              checkable
+              :data="treeData"
+              :checked-keys="formData.MenuIds"
+              :expanded-keys="expandedKeys"
+              @update:checked-keys="onCheckedKeys"
+              @update:expanded-keys="onExpandedKeys"
+            />
+          </div>
+          <div class="mt-2">
+            <n-space>
+              <n-button size="small" @click="toggleExpand">
+                {{ expandedKeys.length ? '收起全部' : '展开全部' }}
+              </n-button>
+              <n-button size="small" @click="toggleCheckAll">
+                {{ isAllChecked ? '取消全选' : '全部选择' }}
+              </n-button>
+            </n-space>
+          </div>
+        </div>
       </div>
-      <template #action>
-        <n-space>
-          <n-button type="info" ghost icon-placement="left" @click="packHandle">
-            全部{{ expandedKeys.length ? '收起' : '展开' }}
-          </n-button>
-
-          <n-button type="info" ghost icon-placement="left" @click="checkedAllHandle">
-            全部{{ checkedAll ? '取消' : '选择' }}
-          </n-button>
-          <n-button type="primary" :loading="formBtnLoading" @click="confirmForm">提交</n-button>
-        </n-space>
-      </template>
-    </n-modal>
-    <CreateModal ref="createModalRef" @success="reloadTable" />
-    <EditModal ref="editModalRef" @success="reloadTable" />
+    </basicModal>
   </n-flex>
 </template>
 
 <script lang="ts" setup>
-  import { reactive, ref, h, onMounted, onActivated, computed } from 'vue';
+  import { reactive, ref, h, onMounted, onActivated, computed, nextTick } from 'vue';
   import { useMessage } from 'naive-ui';
   import { BasicTable, TableAction } from '@/components/Table';
   import { BasicForm, FormSchema, useForm } from '@/components/Form/index';
-  import { getRoleList, batchDeleteRole, getMenuTreeData } from '@/api/system/role';
+  import { basicModal, useModal } from '@/components/Modal';
+  import { getRoleList, batchDeleteRole, getMenuTreeData, createRole, updateRole } from '@/api/system/role';
   import { columns } from './columns';
   import { PlusOutlined, DeleteFilled } from '@vicons/antd';
-  import CreateModal from './CreateModal.vue';
-  import EditModal from './EditModal.vue';
 
   // 菜单树数据接口返回类型
   interface MenuTreeItem {
@@ -104,12 +104,25 @@
     children?: TreeNode[];
   }
 
+  // 角色数据类型
+  interface RoleData {
+    Id: number;
+    Createtime: string;
+    Modifytime: string;
+    Creatorid: number;
+    Modifierid: number;
+    Rolename: string;
+    Rolesort: number;
+    Rolestatus: number;
+    Remark: string;
+    MenuIds: number[];
+  }
+
   // 将扁平数据转换为树形结构
   function convertToTree(list: MenuTreeItem[]): TreeNode[] {
     const map = new Map<number, TreeNode>();
     const roots: TreeNode[] = [];
 
-    // 第一次遍历，创建所有节点
     list.forEach((item) => {
       map.set(item.Id, {
         key: item.Id,
@@ -118,7 +131,6 @@
       });
     });
 
-    // 第二次遍历，建立父子关系
     list.forEach((item) => {
       const node = map.get(item.Id)!;
       if (item.Parentid === 0) {
@@ -131,7 +143,6 @@
       }
     });
 
-    // 清理空的 children 数组
     function cleanEmptyChildren(nodes: TreeNode[]) {
       nodes.forEach((node) => {
         if (node.children && node.children.length === 0) {
@@ -146,10 +157,26 @@
     return roots;
   }
 
+  // 获取所有节点key
+  function getAllKeys(nodes: TreeNode[]): number[] {
+    const keys: number[] = [];
+    function traverse(list: TreeNode[]) {
+      list.forEach((node) => {
+        keys.push(node.key);
+        if (node.children) {
+          traverse(node.children);
+        }
+      });
+    }
+    traverse(nodes);
+    return keys;
+  }
+
   // 定义组件名称，用于 keep-alive 缓存
   defineOptions({
     name: 'system_role',
   });
+
   onActivated(() => {
     reloadTable();
   });
@@ -179,6 +206,50 @@
     },
   ];
 
+  // 编辑表单配置
+  const editSchemas: FormSchema[] = [
+    {
+      field: 'Rolename',
+      component: 'NInput',
+      label: '角色名称',
+      componentProps: {
+        placeholder: '请输入角色名称',
+      },
+      rules: [{ required: true, message: '请输入角色名称', trigger: ['blur'] }],
+    },
+    {
+      field: 'Rolesort',
+      component: 'NInputNumber',
+      label: '显示顺序',
+      defaultValue: 0,
+      componentProps: {
+        placeholder: '请输入显示顺序',
+        min: 0,
+      },
+    },
+    {
+      field: 'Rolestatus',
+      component: 'NRadioGroup',
+      label: '状态',
+      defaultValue: 1,
+      componentProps: {
+        options: [
+          { label: '启用', value: 1 },
+          { label: '禁用', value: 0 },
+        ],
+      },
+    },
+    {
+      field: 'Remark',
+      component: 'NInput',
+      label: '备注',
+      componentProps: {
+        type: 'textarea',
+        placeholder: '请输入备注',
+      },
+    },
+  ];
+
   const [register, { getFieldsValue }] = useForm({
     gridProps: { cols: '1 s:1 m:2 l:3 xl:5 2xl:5' },
     labelWidth: 80,
@@ -186,36 +257,46 @@
     size: 'small',
   });
 
+  const [formRegister, { submit: submitForm, setFieldsValue, resetFields }] = useForm({
+    gridProps: { cols: 1 },
+    labelWidth: 80,
+    layout: 'horizontal',
+    showActionButtonGroup: false,
+    schemas: editSchemas,
+  });
+
   const message = useMessage();
   const actionRef = ref();
-  const createModalRef = ref();
-  const editModalRef = ref();
-  const showModal = ref(false);
-  const formBtnLoading = ref(false);
-  const checkedAll = ref(false);
-  const editRoleTitle = ref('');
+  const selectArr = ref<number[]>([]);
   const treeData = ref<TreeNode[]>([]);
   const expandedKeys = ref<number[]>([]);
-  const checkedKeys = ref<number[]>([]);
-  const selectArr = ref<number[]>([]);
   const allKeys = ref<number[]>([]);
-  // 当前编辑的角色信息
-  const currentRole = ref<{ Id: number; RoleName: string }>({ Id: 0, RoleName: '' });
+  const isEdit = ref(false);
 
-  // 获取所有节点key
-  function getAllKeys(nodes: TreeNode[]): number[] {
-    const keys: number[] = [];
-    function traverse(list: TreeNode[]) {
-      list.forEach((node) => {
-        keys.push(node.key);
-        if (node.children) {
-          traverse(node.children);
-        }
-      });
-    }
-    traverse(nodes);
-    return keys;
-  }
+  // 表单数据
+  const formData = ref<RoleData>({
+    Id: 0,
+    Createtime: '',
+    Modifytime: '',
+    Creatorid: 0,
+    Modifierid: 0,
+    Rolename: '',
+    Rolesort: 0,
+    Rolestatus: 1,
+    Remark: '',
+    MenuIds: [],
+  });
+
+  // 是否全选
+  const isAllChecked = computed(() => {
+    return allKeys.value.length > 0 && formData.value.MenuIds.length === allKeys.value.length;
+  });
+
+  // 弹窗
+  const [modalRegister, { openModal, closeModal, setSubLoading }] = useModal({
+    title: computed(() => (isEdit.value ? '编辑角色' : '新增角色')),
+    subBtuText: '保存',
+  });
 
   // 搜索
   const handleSubmit = (_val) => {
@@ -228,7 +309,7 @@
   };
 
   const actionColumn = reactive({
-    width: 250,
+    width: 180,
     title: '操作',
     key: 'action',
     fixed: 'right',
@@ -237,33 +318,10 @@
         style: 'button',
         actions: [
           {
-            label: '菜单权限',
-            onClick: handleMenuAuth.bind(null, record),
-            // 根据业务控制是否显示 isShow 和 auth 是并且关系
-            ifShow: () => {
-              return true;
-            },
-            // 根据权限控制是否显示: 有权限，会显示，支持多个
-            auth: ['basic_list'],
-          },
-          {
             label: '编辑',
             onClick: handleEdit.bind(null, record),
-            ifShow: () => {
-              return true;
-            },
-            auth: ['basic_list'],
+            ifShow: () => true,
           },
-          // {
-          //   label: '删除',
-          //   onClick: handleDelete.bind(null, record),
-          //   // 根据业务控制是否显示 isShow 和 auth 是并且关系
-          //   ifShow: () => {
-          //     return true;
-          //   },
-          //   // 根据权限控制是否显示: 有权限，会显示，支持多个
-          //   auth: ['basic_list'],
-          // },
         ],
       });
     },
@@ -279,10 +337,6 @@
     };
     return await getRoleList(params);
   };
-
-  function addRole() {
-    createModalRef.value.openModal();
-  }
 
   function onCheckedRow(rowKeys: any[]) {
     selectArr.value = rowKeys;
@@ -305,71 +359,112 @@
     actionRef.value.reload();
   }
 
-  async function confirmForm(e: any) {
-    e.preventDefault();
-    formBtnLoading.value = true;
-    try {
-      // 提交选中的菜单Id数组
-      const params = {
-        Id: currentRole.value.Id,
-        MenuIds: checkedKeys.value,
-      };
-      console.log('提交菜单权限:', params);
-      // TODO: 调用保存菜单权限接口
-      // await saveRoleMenus(params);
-      showModal.value = false;
-      message.success('提交成功');
-      reloadTable();
-    } catch (error) {
-      message.error('提交失败');
-    } finally {
-      formBtnLoading.value = false;
-    }
+  // 新增
+  function handleAdd() {
+    isEdit.value = false;
+    formData.value = {
+      Id: 0,
+      Createtime: '',
+      Modifytime: '',
+      Creatorid: 0,
+      Modifierid: 0,
+      Rolename: '',
+      Rolesort: 0,
+      Rolestatus: 1,
+      Remark: '',
+      MenuIds: [],
+    };
+    openModal();
+    nextTick(() => {
+      resetFields();
+    });
   }
 
+  // 编辑
   function handleEdit(record: Recordable) {
-    console.log('点击了编辑', record);
-    // router.push({ name: 'basic-info', params: { id: record.id } });
-    editModalRef.value.showModal(record);
+    isEdit.value = true;
+    formData.value = {
+      Id: record.Id,
+      Createtime: record.Createtime || '',
+      Modifytime: record.Modifytime || '',
+      Creatorid: record.Creatorid || 0,
+      Modifierid: record.Modifierid || 0,
+      Rolename: record.Rolename || record.RoleName || '',
+      Rolesort: record.Rolesort || record.RoleSort || 0,
+      Rolestatus: record.Rolestatus ?? record.RoleStatus ?? 1,
+      Remark: record.Remark || '',
+      MenuIds: record.MenuIds || [],
+    };
+    openModal();
+    nextTick(() => {
+      setFieldsValue({
+        Rolename: formData.value.Rolename,
+        Rolesort: formData.value.Rolesort,
+        Rolestatus: formData.value.Rolestatus,
+        Remark: formData.value.Remark,
+      });
+    });
   }
 
-  function handleDelete(record: Recordable) {
-    console.log('点击了删除', record);
-    message.info('点击了删除');
+  // 菜单树选中
+  function onCheckedKeys(keys: number[]) {
+    formData.value.MenuIds = keys;
   }
 
-  function handleMenuAuth(record: Recordable) {
-    // 保存当前角色信息
-    currentRole.value = { Id: record.Id, RoleName: record.RoleName };
-    editRoleTitle.value = `分配 ${record.RoleName} 的菜单权限`;
-    // 设置已选中的菜单（如果有）
-    checkedKeys.value = record.MenuIds || [];
-    showModal.value = true;
-  }
-
-  function checkedTree(keys: number[]) {
-    checkedKeys.value = keys;
-  }
-
-  function onExpandedKeys(keys) {
+  // 菜单树展开
+  function onExpandedKeys(keys: number[]) {
     expandedKeys.value = keys;
   }
 
-  function packHandle() {
+  // 展开/收起全部
+  function toggleExpand() {
     if (expandedKeys.value.length) {
       expandedKeys.value = [];
     } else {
-      expandedKeys.value = treeData.value.map((item: any) => item.key) as [];
+      expandedKeys.value = treeData.value.map((item) => item.key);
     }
   }
 
-  function checkedAllHandle() {
-    if (!checkedAll.value) {
-      checkedKeys.value = [...allKeys.value];
-      checkedAll.value = true;
+  // 全选/取消全选
+  function toggleCheckAll() {
+    if (isAllChecked.value) {
+      formData.value.MenuIds = [];
     } else {
-      checkedKeys.value = [];
-      checkedAll.value = false;
+      formData.value.MenuIds = [...allKeys.value];
+    }
+  }
+
+  // 提交表单
+  async function handleSubmitForm() {
+    const formResult = await submitForm();
+    if (!formResult) {
+      setSubLoading(false);
+      return;
+    }
+
+    try {
+      const params: RoleData = {
+        ...formData.value,
+        Rolename: formResult.Rolename,
+        Rolesort: formResult.Rolesort,
+        Rolestatus: formResult.Rolestatus,
+        Remark: formResult.Remark || '',
+      };
+
+      console.log('提交参数:', params);
+
+      if (isEdit.value) {
+        await updateRole(params);
+        message.success('编辑成功');
+      } else {
+        await createRole(params);
+        message.success('新增成功');
+      }
+      closeModal();
+      reloadTable();
+    } catch (error) {
+      message.error(isEdit.value ? '编辑失败' : '新增失败');
+      setSubLoading(false);
     }
   }
 
@@ -379,7 +474,6 @@
       const list = res.Data || res;
       treeData.value = convertToTree(list);
       allKeys.value = getAllKeys(treeData.value);
-      // 默认展开第一级
       expandedKeys.value = treeData.value.map((item) => item.key);
     } catch (error) {
       console.error('获取菜单树数据失败', error);

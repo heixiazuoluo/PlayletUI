@@ -12,6 +12,7 @@ export interface RoleData {
   RoleSort: number;
   RoleStatus: number;
   Remark: string;
+  MenuIds: number[];
 }
 
 export const columns: BasicColumn<RoleData>[] = [

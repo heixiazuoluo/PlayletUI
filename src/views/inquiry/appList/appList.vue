@@ -122,8 +122,8 @@
           <n-form-item label="状态" path="status">
             <n-radio-group v-model:value="fromData.status">
               <n-space>
-                <n-radio :value="0"> 启用 </n-radio>
-                <n-radio :value="1"> 禁用 </n-radio>
+                <n-radio :value="0"> 禁用 </n-radio>
+                <n-radio :value="1"> 启用 </n-radio>
               </n-space>
             </n-radio-group>
           </n-form-item>
@@ -255,7 +255,6 @@
   import { columns, ListData } from './colums';
   import { getAppList, updateApp, createApp } from '@/api/inquiry/app';
   import { type FormRules } from 'naive-ui';
-  import { onlyAllowNumber } from '@/utils';
   import { basicModal, useModal } from '@/components/Modal';
 
   const router = useRouter();
@@ -456,6 +455,85 @@
   function reloadTable() {
     actionRef.value.reload();
   }
+  // 转换为后端接口需要的参数格式
+  function transformToApiParams(data: ListData) {
+    return {
+      Id: data.Id || 0,
+      Name: data.name || '',
+      Appid: data.appId || '',
+      Appsecret: data.appSecret || '',
+      Status: data.status || 0,
+      Acname: '',
+      Addtime: new Date().toISOString(),
+      Aeskey: '',
+      Aesiv: '',
+      Gamesign: '',
+      Gameurl: '',
+      Downurl: '',
+      Imglogourl: '',
+      Ulinkid: data.ulinkid || '',
+      Downloadappurl: data.downloadAppUrl || '',
+      Agreement: data.agreement || '',
+      Privicy: data.privicy || '',
+      Remark: data.remark || '',
+      Icon: '',
+      Weixinappid: '',
+      Weixinappsecret: '',
+      WeixinnotifyUrl: data.weixinNotify_url || '',
+      Weixincerpath: data.weixinCerPath || '',
+      Weixinmchid: data.weixinMchid || '',
+      Weixinserialno: data.weixinSerialNo || '',
+      Weixinappname: '',
+      Weixinapiv3: data.weixinAPIV3 || '',
+      Isweixintixian: data.isWeiXinTiXian || 0,
+      MaxRedpackAmount: data.max_redpack_amount || 0,
+      AppVersion: data.app_version || '',
+      Maxtixiancount: data.maxTiXianCount || 0,
+      Ratiodefault: 0,
+      Ratiocsj: 0,
+      Ratiosigmob: 0,
+      Playletfreeunlockepisodes: data.playletFreeUnlockEpisodes || 0,
+      Lookonestimulateunlockepisodes: data.lookOneStimulateUnlockEpisodes || 0,
+      Streamloopcallinterval: data.streamLoopCallInterval || 0,
+      Bannerloopcallinterval: data.bannerLoopCallInterval || 0,
+      Kfqqkey: data.kfQQKey || '',
+      Kfqq: data.kfQQ || '',
+      EnableDualScreenAD: data.enableDualScreenAD || 0,
+      Ulinkkey: data.ulinkkey || '',
+      Sigmob1: 0,
+      Sigmob2: 0,
+      Sigmob3: 0,
+      Sigmob4: 0,
+      Sigmob5: 0,
+      Sigmob6: 0,
+      Csj1: 0,
+      Csj2: 0,
+      Csj3: 0,
+      Csj4: 0,
+      Csj5: 0,
+      Csj6: 0,
+      Logintype: data.loginType || 0,
+      MaxRedpackAmountShorts: 0,
+      MaxRedpackAmountStimulate: 0,
+      MaxRedpackAmountBanner: 0,
+      MaxRedpackAmountStream: 0,
+      MaxRedpackAmountInterrupt: 0,
+      MaxRedpackAmountOpenscene: 0,
+      Announcementcontent: data.announcementContent || '',
+      Announcementstatus: 0,
+      Weburl: data.webUrl || '',
+      Popuploopcallinterval: 0,
+      Isopenotherpagepopup: 0,
+      Isopenopenscene: 0,
+      Isopeninterrupt: 0,
+      Isopenstream: 0,
+      Isopenbanner: 0,
+      Isopenstimulate: 0,
+      Isopenshorts: 0,
+      Gamepackbag: '',
+    };
+  }
+
   // 提交修改
   const formRef: any = ref(null);
   const formBtnLoading = ref(false);
@@ -464,12 +542,13 @@
     formBtnLoading.value = true;
     formRef.value.validate(async (errors) => {
       if (!errors) {
-        console.log(fromData.value);
+        const apiParams = transformToApiParams(fromData.value);
+        console.log('提交参数:', apiParams);
         if (isAdd.value) {
-          await createApp(fromData.value);
+          await createApp(apiParams);
           window['$message'].success('新建成功');
         } else {
-          await updateApp(fromData.value);
+          await updateApp(apiParams);
           window['$message'].success('编辑成功');
         }
         showModal.value = false;
