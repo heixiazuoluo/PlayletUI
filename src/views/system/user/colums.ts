@@ -3,7 +3,7 @@ import { NTag } from 'naive-ui';
 import { BasicColumn } from '@/components/Table';
 
 export interface ListData {
-  id: number;
+  id?: number;
   userID: string;
   mobile: string | null;
   email: string | null;
@@ -16,6 +16,8 @@ export interface ListData {
   remark: string | null;
   parentid: number | null;
   istg: number;
+  GameNames?: string;
+  RoleNames?: string;
   moneys: number | null;
   openid: string | null;
   ratioUnion: number | null;
@@ -73,6 +75,16 @@ export const columns: BasicColumn<ListData>[] = [
     title: '最后登录时间',
     key: 'lastLoginTime',
     width: 180,
+  },
+  {
+    title: '游戏',
+    key: 'GameNames',
+    width: 250,
+  },
+  {
+    title: '角色',
+    key: 'RoleNames',
+    width: 250,
   },
   {
     title: '备注',

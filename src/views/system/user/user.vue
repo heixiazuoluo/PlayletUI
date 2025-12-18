@@ -148,13 +148,11 @@
     getAdminslist,
     batchDeleteAdmins,
     batchResetpwdAdmins,
-    createAdmins,
     updateAdmins,
-    getAdminsinfo,
   } from '@/api/permission/user';
-  import { getCommonRoles, getCommonGames } from '@/api/common';
+  import { useCommonStore } from '@/store/modules/common';
   import { type FormRules } from 'naive-ui';
-  import { formatDate, daXieToXiaoXie } from '@/utils/dateUtil';
+  import { formatDate } from '@/utils/dateUtil';
 
   // 定义组件名称，用于 keep-alive 缓存
   defineOptions({
@@ -302,10 +300,9 @@
   async function handleEdit(record: Recordable) {
     isEdit.value = 1;
     showModal.value = true;
-
-    const res = await getAdminsinfo(record?.id || record?.Id);
-    const DATA = daXieToXiaoXie(res.Data);
-    fromData.value = DATA as ListData;
+    record.GameIds = record.GameIds.map((i) => Number(i));
+    record.RoleIds = record.RoleIds.map((i) => Number(i));
+    fromData.value = record as ListData;
   }
   function handleResetTab(record: Recordable) {
     nextTick(() => {
@@ -339,7 +336,7 @@
       label: '启用',
     },
   ];
-  const FROMDATA: ListData = {
+  const FROMDATA = {
     id: 0,
     userID: '',
     mobile: null,
@@ -362,26 +359,27 @@
     channel: null,
     uid: null,
   };
+  // 使用公共 store
+  const commonStore = useCommonStore();
+
   // 角色列表
-  const roleLIst = ref<{ id: number; label: string }[]>([]);
+  const roleLIst = computed(() =>
+    commonStore.getRoles.map((item) => ({
+      id: item.Id,
+      label: item.RoleName,
+    }))
+  );
   // 游戏/应用列表
-  const gameLIst = ref<{ id: number; label: string }[]>([]);
+  const gameLIst = computed(() =>
+    commonStore.getGames.map((item) => ({
+      id: item.Id,
+      label: item.name,
+    }))
+  );
 
   // 获取角色和游戏列表
   async function loadCommonData() {
-    try {
-      const [rolesRes, gamesRes] = await Promise.all([getCommonRoles(), getCommonGames()]);
-      roleLIst.value = (rolesRes.Data || []).map((item) => ({
-        id: item.Id,
-        label: item.RoleName,
-      }));
-      gameLIst.value = (gamesRes.Data || []).map((item) => ({
-        id: item.Id,
-        label: item.name,
-      }));
-    } catch (error) {
-      console.error('加载公共数据失败', error);
-    }
+    await Promise.all([commonStore.fetchRoles(), commonStore.fetchGames()]);
   }
 
   onMounted(() => {
@@ -447,23 +445,25 @@
     formBtnLoading.value = true;
     formRef.value.validate(async (errors) => {
       if (!errors) {
-        if (isEdit.value === 0) {
-          await createAdmins({ ...fromData.value }).finally(() => {
-            formBtnLoading.value = false;
-          });
-        } else {
-          await updateAdmins({ ...fromData.value }).finally(() => {
-            formBtnLoading.value = false;
-          });
-        }
-        // console.log(fromData.value);
-        // setTimeout(() => {
+        const params = {
+          id: fromData.value.id || 0,
+          userID: fromData.value.userID || '',
+          pwd: fromData.value.pwd || '',
+          userName: fromData.value.userName || '',
+          mobile: fromData.value.mobile || '',
+          roleIds: fromData.value.RoleIds || [],
+          games: fromData.value.GameIds || [],
+          remark: fromData.value.remark || '',
+          status: fromData.value.status || 0,
+        };
+        await updateAdmins(params).finally(() => {
+          formBtnLoading.value = false;
+        });
         setTimeout(() => {
           window['$message'].success(isEdit.value === 0 ? '新建成功' : '编辑成功');
           showModal.value = false;
           reloadTable();
         }, 500);
-        // });
       } else {
         window['$message'].error('请填写完整信息');
       }

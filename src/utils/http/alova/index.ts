@@ -113,6 +113,9 @@ export const Alova = createAlova({
           },
         });
       } else {
+        if (isIgnoreUrl(method.url)) {
+          return;
+        }
         // 可按需处理错误 一般情况下不是 912 错误，不一定需要弹出 message
         Message?.error(message);
         throw new Error(message);
@@ -120,6 +123,11 @@ export const Alova = createAlova({
     },
   },
 });
+const arr = ['/am/v1/data/quanyilogs/list', '/am/v1/data/cash/list'];
+
+function isIgnoreUrl(url: string) {
+  return arr.some((item) => url.includes(item));
+}
 
 // 项目，多个不同 api 地址，可导出多个实例
 // export const AlovaTwo = createAlova({

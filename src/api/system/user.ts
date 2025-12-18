@@ -47,7 +47,7 @@ export function getUserInfo() {
  * @description: 用户修改密码
  */
 export function changePassword(params, uid) {
-  return Alova.Post(`/user/u${uid}/changepw`, params);
+  return Alova.Post(`/user/u${uid}/changepw`, { params });
 }
 
 /**

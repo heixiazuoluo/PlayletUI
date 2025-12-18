@@ -27,9 +27,3 @@ export function formatDate(timestamp: number, formatStr = DATE_FORMAT): string {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   }
 }
-export function daXieToXiaoXie(val: object) {
-  return Object.keys(val).reduce((acc, cur) => {
-    acc[cur.toLowerCase()] = val[cur];
-    return acc;
-  }, {});
-}

@@ -40,17 +40,18 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, h, onMounted } from 'vue';
+  import { ref, reactive, h, onMounted, computed } from 'vue';
   import { BasicTable, TableAction } from '@/components/Table';
   import { BasicForm, FormSchema, useForm } from '@/components/Form/index';
   import { basicModal, useModal } from '@/components/Modal';
   import { columns, typeMap, WithdrawSettingData } from './columns';
   import {
     getWithdrawSettingList,
+    getWithdrawSettingDetail,
     createWithdrawSetting,
     updateWithdrawSetting,
   } from '@/api/inquiry/withdrawSetting';
-  import { getCommonGames } from '@/api/common';
+  import { useCommonStore } from '@/store/modules/common';
   import { PlusOutlined } from '@vicons/antd';
 
   defineOptions({
@@ -60,7 +61,10 @@
   const actionRef = ref();
   const isEdit = ref(false);
   const currentId = ref<number | null>(null);
-  const gameOptions = ref<{ label: string; value: number }[]>([]);
+
+  // 使用公共 store
+  const commonStore = useCommonStore();
+  const gameOptions = computed(() => commonStore.getGameOptions);
 
   // 类别选项：0-玩家，1-团长，2-师傅
   const typeOptions = Object.entries(typeMap).map(([value, label]) => ({
@@ -245,8 +249,7 @@
   const loadDataTable = async (res) => {
     const formValues = getFieldsValue();
     const params = {
-      apps: formValues.apps || '',
-      typeID: formValues.typeID,
+      ...formValues,
       ...res,
     };
     return await getWithdrawSettingList(params);
@@ -268,24 +271,30 @@
   }
 
   // 编辑
-  function handleEdit(record: WithdrawSettingData) {
+  async function handleEdit(record: WithdrawSettingData) {
     isEdit.value = true;
     currentId.value = record.Id;
     setProps({ title: '编辑' });
-    setTimeout(() => {
-      setFieldsValue({
-        gid: record.gid,
-        typeID: record.typeID,
-        label: record.label,
-        value: record.value,
-        limit: record.limit,
-        SubsidyAmount: record.SubsidyAmount,
-        SubsidyStartTime: record.SubsidyStartTime,
-        SubsidyEndTime: record.SubsidyEndTime,
-        status: record.status,
-      });
-    }, 50);
     openModal();
+    try {
+      const res = await getWithdrawSettingDetail(record.Id);
+      const data = res.Data || res;
+      setTimeout(() => {
+        setFieldsValue({
+          gid: record.gid, // gid 从列表记录中获取
+          typeID: record.typeID, // typeID 从列表记录中获取
+          label: data.label,
+          value: Number(data.value),
+          limit: Number(data.limit),
+          SubsidyAmount: data.SubsidyAmount,
+          SubsidyStartTime: data.SubsidyStartTime,
+          SubsidyEndTime: data.SubsidyEndTime,
+          status: data.status,
+        });
+      }, 50);
+    } catch (error) {
+      window['$message'].error('获取详情失败');
+    }
   }
 
   // 弹窗确认
@@ -293,9 +302,12 @@
     const formRes = await submit();
     if (formRes) {
       try {
+        formRes.Typeid = formRes.typeID;
+        delete formRes.typeID;
         const params = {
           ...formRes,
           Id: isEdit.value ? currentId.value : 0,
+          Sign: 1,
         };
         if (isEdit.value) {
           await updateWithdrawSetting(params);
@@ -317,24 +329,13 @@
 
   // 获取游戏列表
   onMounted(async () => {
-    try {
-      const res = await getCommonGames();
-      const list = res.Data || res;
-      gameOptions.value = list.map((item) => ({
-        label: item.name,
-        value: item.Id,
-      }));
-      // 设置默认值为第一个游戏
-      if (gameOptions.value.length > 0) {
-        console.log(gameOptions.value[0].value);
-        setSearchFieldsValue({ apps: gameOptions.value[0].value });
-        setTimeout(() => {
-          console.log(getFieldsValue());
-          reloadTable();
-        }, 50);
-      }
-    } catch (error) {
-      console.error('获取游戏列表失败', error);
+    await commonStore.fetchGames();
+    // 设置默认值为第一个游戏
+    if (gameOptions.value.length > 0) {
+      setSearchFieldsValue({ apps: gameOptions.value[0].value });
+      setTimeout(() => {
+        reloadTable();
+      }, 50);
     }
   });
 </script>

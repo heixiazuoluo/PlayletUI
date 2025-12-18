@@ -21,33 +21,20 @@ export function getAdminslist(params) {
  * @param {number[]} ids - 管理员ID数组
  */
 export function batchDeleteAdmins(ids: number[]) {
-  return Alova.Post<InResult>('/am/v1/auths/admins/batch_delete', ids);
+  return Alova.Post<InResult>('/am/v1/auths/admins/delete', ids);
 }
 /**
  * @description: 重置密码
  *
  */
 export function batchResetpwdAdmins(params) {
-  return Alova.Post<InResult>('/am/v1/auths/admins/reset_pwd', params);
+  return Alova.Post<InResult>(`/am/v1/auths/admins/resetpwd?id=${params.id}&pwd=${params.pwd}`);
 }
+
 /**
- * @description: 创建管理员
- *
- */
-export function createAdmins(params) {
-  return Alova.Post<InResult>('/am/v1/auths/admins/create', params);
-}
-/**
- * @description: 更新管理员
+ * @description: 新增或修改管理员
  *
  */
 export function updateAdmins(params) {
-  return Alova.Post<InResult>('/am/v1/auths/admins/update', params);
-}
-/**
- * @description: 获取管理员信息
- *
- */
-export function getAdminsinfo(id: number) {
-  return Alova.Get<InResult>('/am/v1/auths/admins/getadminsinfo?id=' + id);
+  return Alova.Post<InResult>('/am/v1/auths/admins/save', params);
 }

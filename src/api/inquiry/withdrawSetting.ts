@@ -5,6 +5,11 @@ export function getWithdrawSettingList(params: any) {
   return Alova.Get('/am/v1/data/cash/list', { params });
 }
 
+// 获取提现设置详情
+export function getWithdrawSettingDetail(id: number) {
+  return Alova.Get('/am/v1/data/cash/detail', { params: { id } });
+}
+
 // 新增提现设置
 export function createWithdrawSetting(data: any) {
   return Alova.Post('/am/v1/data/cash/create', data);
